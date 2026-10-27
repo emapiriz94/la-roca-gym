@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La Roca Gym — Sistema de Gestión</title>
+<style>
+:root{
+  --bg:#f4f6f8; --card:#fff; --text:#17202a; --muted:#6b7280;
+  --primary:#171717; --accent:#d97706; --accent2:#f59e0b;
+  --border:#e5e7eb; --green:#15803d; --red:#b91c1c; --blue:#2563eb;
+  --shadow:0 8px 24px rgba(15,23,42,.07); --radius:16px;
+}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#111;color:#fff;padding:20px 14px;position:fixed;inset:0 auto 0 0;z-index:5}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 10px 25px}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#f59e0b,#92400e);display:grid;place-items:center;font-weight:900;font-size:22px;color:#111}
+.brand strong{font-size:18px}.brand small{display:block;color:#aaa;margin-top:2px}
+.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#c9c9c9;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer}
+.nav button:hover,.nav button.active{background:#292929;color:#fff}.nav button.active{box-shadow:inset 3px 0 var(--accent2)}
+.main{margin-left:245px;width:calc(100% - 245px);padding:26px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:22px}
+h1{font-size:28px;margin:0 0 5px}.sub{color:var(--muted);font-size:14px}
+.user{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.stat .label{color:var(--muted);font-size:13px}.stat .value{font-size:28px;font-weight:800;margin-top:8px}.stat .delta{font-size:12px;margin-top:5px}
+.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.orange{color:#b45309}
+.two{grid-template-columns:1.25fr .75fr;margin-top:16px}.three{grid-template-columns:repeat(3,1fr)}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.section-title h2{font-size:17px;margin:0}
+.btn{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700}.primary{background:#171717;color:#fff}.accent{background:var(--accent2);color:#111}.light{background:#f3f4f6;color:#111}.danger{background:#fee2e2;color:#991b1b}
+.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px 9px;border-bottom:1px solid var(--border);font-size:13px}.table th{color:var(--muted);font-weight:600}
+.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.bad{background:#fee2e2;color:#991b1b}
+.searchbar{display:flex;gap:10px;margin-bottom:14px}.searchbar input{flex:1}.input,select{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;background:#fff;outline:none}.input:focus,select:focus{border-color:#a16207;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.hidden{display:none!important}
+.page{display:none}.page.active{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:20;padding:20px}.modalbox{background:#fff;border-radius:18px;width:min(650px,100%);padding:22px;max-height:90vh;overflow:auto}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.full{grid-column:1/-1}
+.toast{position:fixed;right:20px;bottom:20px;background:#111;color:#fff;padding:13px 16px;border-radius:12px;box-shadow:var(--shadow);z-index:50;display:none}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.kpi{padding:14px;background:#fafafa;border-radius:12px}.kpi b{font-size:22px;display:block;margin-top:4px}
+.login{position:fixed;inset:0;background:linear-gradient(135deg,#111 0%,#292929 55%,#92400e 100%);display:grid;place-items:center;z-index:100}
+.loginbox{width:min(420px,92%);background:#fff;border-radius:22px;padding:30px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.loginbrand{text-align:center;margin-bottom:24px}.loginbrand .logo{margin:auto;width:60px;height:60px;font-size:28px}.loginbrand h1{margin-top:12px}
+@media(max-width:900px){.sidebar{width:72px}.brand div:not(.logo),.nav button span{display:none}.main{margin-left:72px;width:calc(100% - 72px)}.stats{grid-template-columns:1fr 1fr}.two,.three{grid-template-columns:1fr}}
+@media(max-width:600px){.main{padding:16px}.top{align-items:flex-start}.stats{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.table{min-width:650px}.card{overflow:auto}}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="loginbox">
+    <div class="loginbrand">
+      <div class="logo">R</div>
+      <h1>LA ROCA GYM</h1>
+      <div class="sub">Sistema de Gestión</div>
+    </div>
+    <div class="field"><label>Usuario</label><input id="loginUser" class="input" value="admin"></div>
+    <div class="field" style="margin-top:12px"><label>Contraseña</label><input id="loginPass" type="password" class="input" value="demo"></div>
+    <button class="btn primary" style="width:100%;margin-top:18px" onclick="login()">Ingresar a la demo</button>
+    <p class="sub" style="text-align:center;margin-top:12px">Demo: admin / demo</p>
+  </div>
+</div>
+
+<div class="app hidden" id="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">R</div><div><strong>LA ROCA GYM</strong><small>Gestión</small></div></div>
+    <nav class="nav">
+      <button class="active" data-page="dashboard">🏠 <span>Inicio</span></button>
+      <button data-page="socios">👥 <span>Socios</span></button>
+      <button data-page="pagos">💳 <span>Pagos</span></button>
+      <button data-page="asistencia">🚪 <span>Asistencia</span></button>
+      <button data-page="turnos">📅 <span>Turnos</span></button>
+      <button data-page="rutinas">🏋️ <span>Rutinas</span></button>
+      <button data-page="caja">💰 <span>Caja</span></button>
+      <button data-page="informes">📊 <span>Informes</span></button>
+      <button data-page="config">⚙️ <span>Configuración</span></button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div><h1 id="pageTitle">Inicio</h1><div class="sub" id="pageSub">Resumen general de La Roca Gym</div></div>
+      <div class="user">👤 Administrador</div>
+    </div>
+
+    <section class="page active" id="page-dashboard">
+      <div class="grid stats">
+        <div class="card stat"><div class="label">Socios activos</div><div class="value">327</div><div class="delta green">▲ 8 este mes</div></div>
+        <div class="card stat"><div class="label">Ingresos de hoy</div><div class="value">$350.000</div><div class="delta green">▲ 12% vs. ayer</div></div>
+        <div class="card stat"><div class="label">Vencen hoy</div><div class="value">8</div><div class="delta orange">Requieren seguimiento</div></div>
+        <div class="card stat"><div class="label">Ingresos de hoy</div><div class="value">74</div><div class="delta blue">Último: 17:42</div></div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <div class="section-title"><h2>Próximos vencimientos</h2><button class="btn light" onclick="go('socios')">Ver socios</button></div>
+          <table class="table"><thead><tr><th>Socio</th><th>Plan</th><th>Vence</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Juan Pérez</td><td>Musculación</td><td>28/10/2026</td><td><span class="badge warn">2 días</span></td></tr>
+            <tr><td>Carla Gómez</td><td>Pase libre</td><td>29/10/2026</td><td><span class="badge warn">3 días</span></td></tr>
+            <tr><td>Martín López</td><td>Funcional</td><td>31/10/2026</td><td><span class="badge ok">5 días</span></td></tr>
+            <tr><td>Ana Rodríguez</td><td>Musculación</td><td>02/11/2026</td><td><span class="badge ok">7 días</span></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card">
+          <div class="section-title"><h2>Accesos recientes</h2><button class="btn light" onclick="go('asistencia')">Ver todos</button></div>
+          <table class="table"><thead><tr><th>Socio</th><th>Hora</th></tr></thead><tbody>
+            <tr><td>Juan Pérez</td><td>17:42</td></tr><tr><td>Carla Gómez</td><td>17:38</td></tr>
+            <tr><td>Lucas Acosta</td><td>17:31</td></tr><tr><td>Ana Rodríguez</td><td>17:22</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-socios">
+      <div class="card">
+        <div class="section-title"><h2>Socios</h2><button class="btn accent" onclick="openModal()">+ Nuevo socio</button></div>
+        <div class="searchbar"><input id="search" class="input" placeholder="Buscar por nombre o DNI..." oninput="renderMembers()"><select id="statusFilter" class="input" style="max-width:180px" onchange="renderMembers()"><option value="">Todos</option><option>Activo</option><option>Próximo a vencer</option><option>Vencido</option></select></div>
+        <div style="overflow:auto"><table class="table"><thead><tr><th>Socio</th><th>DNI</th><th>Plan</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead><tbody id="memberRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-pagos">
+      <div class="grid stats">
+        <div class="card stat"><div class="label">Cobrado hoy</div><div class="value">$350.000</div></div>
+        <div class="card stat"><div class="label">Pagos registrados</div><div class="value">18</div></div>
+        <div class="card stat"><div class="label">Pendiente</div><div class="value">$125.000</div></div>
+        <div class="card stat"><div class="label">Ticket promedio</div><div class="value">$19.444</div></div>
+      </div>
+      <div class="card" style="margin-top:16px"><div class="section-title"><h2>Últimos pagos</h2><button class="btn accent" onclick="toast('Formulario de pago listo para conectar a la base de datos.')">+ Registrar pago</button></div>
+      <table class="table"><thead><tr><th>Fecha</th><th>Socio</th><th>Concepto</th><th>Medio</th><th>Monto</th></tr></thead><tbody>
+      <tr><td>27/10 17:15</td><td>Juan Pérez</td><td>Mensualidad</td><td>Efectivo</td><td>$25.000</td></tr>
+      <tr><td>27/10 16:48</td><td>Carla Gómez</td><td>Mensualidad</td><td>Transferencia</td><td>$25.000</td></tr>
+      <tr><td>27/10 16:20</td><td>Martín López</td><td>Funcional</td><td>Débito</td><td>$20.000</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="page" id="page-asistencia">
+      <div class="grid two">
+        <div class="card">
+          <div class="section-title"><h2>Control de acceso</h2><span class="badge ok">Sistema activo</span></div>
+          <p class="sub">Ingresá el DNI del socio para simular un acceso.</p>
+          <input id="dni" class="input" placeholder="Ej.: 38456789" onkeydown="if(event.key==='Enter')checkAccess()">
+          <button class="btn primary" style="margin-top:10px" onclick="checkAccess()">Registrar ingreso</button>
+          <div id="accessResult" style="margin-top:16px"></div>
+        </div>
+        <div class="card"><div class="section-title"><h2>Últimos accesos</h2></div><div id="accessList"></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-turnos">
+      <div class="card"><div class="section-title"><h2>Turnos y actividades</h2><button class="btn accent" onclick="toast('Nuevo turno: formulario listo para implementar.')">+ Nueva actividad</button></div>
+      <div class="grid three">
+        <div class="card"><b>🏋️ Funcional</b><p class="sub">18:00 · Lunes</p><div class="badge ok">12 / 15</div></div>
+        <div class="card"><b>🔥 Spinning</b><p class="sub">19:00 · Lunes</p><div class="badge warn">14 / 15</div></div>
+        <div class="card"><b>💪 Musculación</b><p class="sub">20:00 · Libre</p><div class="badge ok">8 / 20</div></div>
+      </div></div>
+    </section>
+
+    <section class="page" id="page-rutinas">
+      <div class="card"><div class="section-title"><h2>Rutinas</h2><button class="btn accent" onclick="toast('Nueva rutina: formulario listo para implementar.')">+ Nueva rutina</button></div>
+      <table class="table"><thead><tr><th>Socio</th><th>Rutina</th><th>Última actualización</th><th>Profesor</th><th></th></tr></thead><tbody>
+      <tr><td>Juan Pérez</td><td>Hipertrofia A/B</td><td>25/10/2026</td><td>Marcos</td><td><button class="btn light" onclick="toast('Vista de rutina de Juan Pérez')">Ver</button></td></tr>
+      <tr><td>Carla Gómez</td><td>Fuerza inicial</td><td>22/10/2026</td><td>Lucía</td><td><button class="btn light" onclick="toast('Vista de rutina de Carla Gómez')">Ver</button></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="page" id="page-caja">
+      <div class="grid stats"><div class="card stat"><div class="label">Ingresos</div><div class="value">$350.000</div></div><div class="card stat"><div class="label">Egresos</div><div class="value">$45.000</div></div><div class="card stat"><div class="label">Saldo</div><div class="value">$305.000</div></div><div class="card stat"><div class="label">Estado</div><div class="value green">Abierta</div></div></div>
+      <div class="card" style="margin-top:16px"><div class="section-title"><h2>Movimientos del día</h2><button class="btn accent" onclick="toast('Movimiento preparado.')">+ Nuevo movimiento</button></div>
+      <table class="table"><thead><tr><th>Hora</th><th>Tipo</th><th>Detalle</th><th>Monto</th></tr></thead><tbody>
+      <tr><td>17:15</td><td class="green">Ingreso</td><td>Cuota Juan Pérez</td><td>$25.000</td></tr><tr><td>15:30</td><td class="red">Egreso</td><td>Productos de limpieza</td><td>$15.000</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="page" id="page-informes">
+      <div class="grid three">
+        <div class="card"><h2>Socios</h2><div class="kpis"><div class="kpi">Activos<b>327</b></div><div class="kpi">Vencidos<b>23</b></div><div class="kpi">Nuevos<b>18</b></div></div></div>
+        <div class="card"><h2>Asistencia</h2><div class="kpis"><div class="kpi">Hoy<b>74</b></div><div class="kpi">Semana<b>412</b></div><div class="kpi">Mes<b>1.684</b></div></div></div>
+        <div class="card"><h2>Finanzas</h2><div class="kpis"><div class="kpi">Ingresos<b>$350K</b></div><div class="kpi">Egresos<b>$45K</b></div><div class="kpi">Saldo<b>$305K</b></div></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-config">
+      <div class="grid two">
+        <div class="card"><h2>Identidad del gimnasio</h2><div class="field"><label>Nombre</label><input class="input" value="La Roca Gym"></div><div class="field" style="margin-top:12px"><label>Lema</label><input class="input" value="Entrená fuerte. Superate."></div><button class="btn primary" style="margin-top:14px" onclick="toast('Configuración guardada en la demo.')">Guardar cambios</button></div>
+        <div class="card"><h2>Preferencias</h2><p><b>💾 Backup</b><br><span class="sub">En la versión real se podrá crear y restaurar copias de la base de datos.</span></p><button class="btn light" onclick="toast('Backup simulado creado correctamente.')">Crear backup</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div class="modalbox">
+    <div class="section-title"><h2>Nuevo socio</h2><button class="btn light" onclick="closeModal()">✕</button></div>
+    <div class="formgrid">
+      <div class="field"><label>Nombre</label><input id="newName" class="input" placeholder="Nombre"></div>
+      <div class="field"><label>Apellido</label><input id="newLast" class="input" placeholder="Apellido"></div>
+      <div class="field"><label>DNI</label><input id="newDni" class="input" placeholder="DNI"></div>
+      <div class="field"><label>Teléfono</label><input id="newPhone" class="input" placeholder="WhatsApp"></div>
+      <div class="field"><label>Plan</label><select id="newPlan" class="input"><option>Musculación</option><option>Funcional</option><option>Pase libre</option></select></div>
+      <div class="field"><label>Vencimiento</label><input id="newDate" type="date" class="input"></div>
+      <div class="field full"><label>Observaciones</label><input id="newObs" class="input" placeholder="Opcional"></div>
+    </div>
+    <div class="actions" style="justify-content:flex-end;margin-top:18px"><button class="btn light" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="addMember()">Guardar socio</button></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const members=[
+ {name:"Juan Pérez",dni:"38456789",plan:"Musculación",date:"28/10/2026",status:"Próximo a vencer"},
+ {name:"Carla Gómez",dni:"40123456",plan:"Pase libre",date:"29/10/2026",status:"Próximo a vencer"},
+ {name:"Martín López",dni:"37111222",plan:"Funcional",date:"31/10/2026",status:"Activo"},
+ {name:"Ana Rodríguez",dni:"42333444",plan:"Musculación",date:"02/11/2026",status:"Activo"},
+ {name:"Lucas Acosta",dni:"35999888",plan:"Musculación",date:"15/10/2026",status:"Vencido"},
+];
+const access=[];
+function login(){document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden')}
+const titles={dashboard:["Inicio","Resumen general de La Roca Gym"],socios:["Socios","Administrá altas, bajas, planes y vencimientos"],pagos:["Pagos","Cobros y movimientos de socios"],asistencia:["Asistencia","Control de acceso y registro de ingresos"],turnos:["Turnos","Actividades, horarios y cupos"],rutinas:["Rutinas","Seguimiento de entrenamiento de los socios"],caja:["Caja","Ingresos, egresos y cierre diario"],informes:["Informes","Indicadores generales del gimnasio"],config:["Configuración","Identidad y preferencias del sistema"]};
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+function go(page){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');document.getElementById('pageTitle').textContent=titles[page][0];document.getElementById('pageSub').textContent=titles[page][1];if(page==='socios')renderMembers()}
+function renderMembers(){
+ const q=(document.getElementById('search').value||'').toLowerCase(), f=document.getElementById('statusFilter').value;
+ const rows=members.filter(m=>(!q||(m.name+' '+m.dni).toLowerCase().includes(q))&&(!f||m.status===f)).map((m,i)=>{
+  const cls=m.status==='Activo'?'ok':m.status==='Vencido'?'bad':'warn';
+  return `<tr><td><b>${m.name}</b></td><td>${m.dni}</td><td>${m.plan}</td><td>${m.date}</td><td><span class="badge ${cls}">${m.status}</span></td><td><button class="btn light" onclick="viewMember(${i})">Ver ficha</button></td></tr>`
+ }).join('');
+ document.getElementById('memberRows').innerHTML=rows||'<tr><td colspan="6">No se encontraron socios.</td></tr>';
+}
+function viewMember(i){const m=members[i];toast(`${m.name} · ${m.plan} · Vence ${m.date}`)}
+function openModal(){document.getElementById('modal').classList.remove('hidden')}
+function closeModal(){document.getElementById('modal').classList.add('hidden')}
+function addMember(){
+ const n=document.getElementById('newName').value.trim(),l=document.getElementById('newLast').value.trim(),d=document.getElementById('newDni').value.trim();
+ if(!n||!l||!d){toast('Completá nombre, apellido y DNI.');return}
+ members.unshift({name:n+' '+l,dni:d,plan:document.getElementById('newPlan').value,date:document.getElementById('newDate').value||'Sin fecha',status:'Activo'});
+ closeModal();renderMembers();toast('Socio agregado a la demo.');go('socios')
+}
+function checkAccess(){
+ const dni=document.getElementById('dni').value.trim(), m=members.find(x=>x.dni===dni), box=document.getElementById('accessResult');
+ if(!m){box.innerHTML='<div class="card" style="background:#fff1f2"><b class="red">🔴 Socio no encontrado</b><p class="sub">Probá con 38456789 para simular un acceso.</p></div>';return}
+ if(m.status==='Vencido'){box.innerHTML=`<div class="card" style="background:#fff1f2"><b class="red">🔴 ACCESO DENEGADO</b><p>${m.name}<br>Cuota vencida.</p></div>`;return}
+ const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+ access.unshift({name:m.name,time:now});renderAccess();box.innerHTML=`<div class="card" style="background:#f0fdf4"><b class="green">🟢 ACCESO AUTORIZADO</b><p>${m.name}<br>Plan: ${m.plan}<br>Vencimiento: ${m.date}<br>Hora: ${now}</p></div>`;toast('Ingreso registrado correctamente.')
+}
+function renderAccess(){document.getElementById('accessList').innerHTML=access.slice(0,6).map(a=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee"><b>${a.name}</b><span class="sub">${a.time}</span></div>`).join('')||'<p class="sub">Todavía no hay accesos en esta sesión.</p>'}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>t.style.display='none',2600)}
+renderMembers();renderAccess();
+</script>
+</body>
+</html>
